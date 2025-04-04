@@ -1,0 +1,321 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Financial Portfolio Optimization</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+  </head>
+  <body>
+    
+    <nav class="navbar navbar-expand-lg bg-dark"> 
+        <div class="container-fluid">
+          <a class="navbar-brand text-white" href="#"><strong>FPO</strong></a>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+              <li class="nav-item">
+                <a class="nav-link active text-white" aria-current="page" href="#">Home</a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </nav>
+
+      <div style="position: relative; background: url('{{ url_for('static', filename='1.jpg') }}') no-repeat center center/cover; height: 100vh;">
+        <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5);"></div>
+        
+        <section class="py-2 position-relative" style="z-index: 1;">
+            <div class="mx-5 px-5 mt-5 mb-3 pt-5 pb-5 border border-light rounded">
+                <h1 class="text-center text-white">Strengthen Your Portfolio Today!</h1>
+            </div>
+    
+            <div class="mx-5 px-5 pt-5 pb-5 border border-light rounded">
+                <form action="/run_model" method="POST">
+                    <div class="d-flex flex-row gap-5 align-items-start p-4">
+                        <div>
+                            <label class="form-label text-white fs-5"><strong>Risk Level</strong></label>
+                            <div class="d-flex flex-row gap-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="risklevel" id="flexRadioLow" value="low" checked>
+                                    <label class="form-check-label text-white" for="flexRadioLow">Low</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="risklevel" id="flexRadioModerate" value="moderate">
+                                    <label class="form-check-label text-white" for="flexRadioModerate">Moderate</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="risklevel" id="flexRadioHigh" value="high">
+                                    <label class="form-check-label text-white" for="flexRadioHigh">High</label>
+                                </div>
+                            </div>
+                        </div>
+    
+                        <div class="flex-grow-1">
+                            <label class="form-label text-white fs-5"><strong>Time Period</strong></label>
+                            <input required class="form-control w-100" type="text" name="time_period" placeholder="Enter number of days">
+                        </div>
+    
+                        <div class="flex-grow-1">
+                            <label class="form-label text-white fs-5"><strong>Investment Amount</strong></label>
+                            <div class="input-group w-100">
+                                <span class="input-group-text">₹</span>
+                                <input required type="text" class="form-control" name="investment_amount">
+                                <span class="input-group-text">.00</span>
+                            </div>
+                        </div>
+
+                        <div class="flex-grow-1">
+                          <label class="form-label text-white fs-5"><strong>Age</strong></label>
+                          <select required class="form-select" aria-label="Default select example" name="age">
+                            <option selected value="adult">Adult (Below 60)</option>
+                            <option value="senior">Senior (Above 60)</option>
+                          </select>
+                      </div>
+                    </div>
+    
+                    <div class="d-flex justify-content-center mt-3">
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        {% if result %}
+          <div id="result-data" data-result='{{ result }}' hidden></div>
+        
+
+        <div class="container mt-5">
+          <div class="d-flex justify-content-between">
+            <!-- Pie Chart Section -->
+            <div class="pie-chart-container" style="width: 400px; height: 400px; position: relative;">
+              <canvas id="investmentChart"></canvas>
+            </div>
+      
+            <!-- Investment Details Table -->
+            <div class="investment-details-table" style="width: 600px; height: 400px; position: relative;">
+              <div class="d-flex justify-content-between">
+                {% if result %}
+                <div>
+                  <h5 class="text-white">Investment Amount: <span class="text-white">₹{{ result.investment_amount }}</span></h5>
+                  <h5 class="text-white">Investment Period: <span class="text-white">{{ result.time_period }}</span></h5>
+                </div>
+                <h5 class="text-white">Return: <span id="investment-return"></span></h5>
+                {% endif %}
+              </div>
+              <h3 class="text-center text-white">Investment Details</h3>
+              <table class="table table-striped table-bordered">
+                <thead>
+                  <tr>
+                    <th scope="col">Asset Type</th>
+                    <th scope="col">Asset Name</th>
+                    <th scope="col">Allocation</th>
+                    <th scope="col">Max. Return</th>
+                  </tr>
+                </thead>
+                <tbody id="investment-details-body">
+                  <tr>
+                    <td>Stocks</td>
+                    <td>40%</td>
+                    <td>15.5%</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
+
+
+    <script>
+      window.onload = function () {
+          updatePieChart(); // Call function only after everything loads
+      };
+      
+      function updatePieChart() {
+          var resultDiv = document.getElementById('result-data');
+          
+          if (!resultDiv) {
+              console.error("No result data found!");
+              return;
+          }
+      
+          pythonStyleString = resultDiv.getAttribute('data-result')
+          let jsCompatibleString = pythonStyleString
+            .replace(/array\(/g, '[')   // Replace array() with [
+            .replace(/\)/g, ']')        // Replace ) with ]
+            .replace(/'/g, '"');         // Replace single quotes with double quotes for valid JSON
+
+          // Now use eval to parse the corrected string
+          let result = eval("(" + jsCompatibleString + ")");
+      
+          if (!result.risk_level) {
+              console.error("Risk level not found in result!");
+              return;
+          }
+      
+          var riskLevel = result.risk_level.toLowerCase();
+      
+          var riskAllocation = {
+              "low": {"Stocks": 0.4, "Bonds": 0.5, "Cash": 0.1},
+              "moderate": {"Stocks": 0.5, "Bonds": 0.4, "Cash": 0.1},
+              "high": {"Stocks": 0.7, "Bonds": 0.25, "Cash": 0.05}
+          };
+      
+          var colors = {
+              "low": ["#28a745", "#17a2b8", "#ffc107"],     
+              "moderate": ["#007bff", "#6c757d", "#ffc107"], 
+              "high": ["#dc3545", "#343a40", "#ffc107"]     
+          };
+
+          var allocation = riskAllocation[riskLevel] || riskAllocation["low"]; 
+          var chartColors = colors[riskLevel] || colors["low"];
+
+          // Extract best assets
+          var bestStock = result.Index.best_asset + ' & ' + result.Mutual_Funds.best_asset || "Stocks";
+          var bestBond = result.Gold_Bond.best_asset || "Bonds";
+
+          var bank_col_name = 'Return Rate for Adults (%]'
+          if (result.age == 'adult') {
+            bank_col_name = 'Return Rate for Adults (%]'
+          } else {
+            bank_col_name = 'Return Rate for Senior Citizens (%]'
+          }
+
+          // Format Top 3 FD banks
+          var cashLabel = "Cash (Bank Fixed Deposit)";
+          
+          // Fill in the table dynamically
+          var tableBody = document.getElementById("investment-details-body");
+          
+          // Clear existing rows
+          tableBody.innerHTML = "";
+          
+          var topFDBanks = result.Top_3_FD_Banks || [];
+          var bank_names = topFDBanks.map(bank => {
+            return `${bank["Bank Name"]} |`;
+          }).join("\n");
+
+          var bank_rates = topFDBanks.map(bank => {
+            return `${bank[bank_col_name]}% |`;
+          }).join("\n");
+
+          // Calculate total return from each asset type
+          investment_amount = parseInt(result.investment_amount)
+          var stockAmount = allocation.Stocks * investment_amount;
+          var bondAmount = allocation.Bonds * investment_amount;
+          var cashAmount = allocation.Cash * investment_amount;
+
+
+          var highest_stock_return = result.Mutual_Funds.best_return
+          if (result.Mutual_Funds.best_return > result.Index.best_return) {
+            highest_stock_return = result.Mutual_Funds.best_return
+          }
+
+          var stockReturnAmount = (stockAmount * (highest_stock_return / 100)).toFixed(2);
+          var bondReturnAmount = (bondAmount * (result.Gold_Bond.best_return / 100)).toFixed(2);
+          var profit_cashAmount = (cashAmount * topFDBanks[0][bank_col_name]) / 100
+          var final_cashAmount = ((profit_cashAmount / 365) * result.time_period).toFixed(2);
+
+          console.log(stockReturnAmount, bondReturnAmount, final_cashAmount)
+          
+          // Calculate the total return
+          var totalReturn = (parseFloat(stockReturnAmount) + parseFloat(bondReturnAmount) + parseFloat(final_cashAmount)).toFixed(2);
+          console.log(totalReturn)
+
+          var investment_return = document.getElementById("investment-return");
+          investment_return.innerHTML = ''
+          investment_return.innerHTML = '₹' + totalReturn
+          if (totalReturn > 0) {
+            investment_return.style.color = '#9bef9b';
+          } else {
+            investment_return.style.color = 'rgb(255 146 146)';
+          }
+
+          // Insert new rows based on the result data
+          var rowStock = `
+              <tr>
+                  <td>Index / Mutual Fund</td>
+                  <td>${result.Index.best_asset} / ${result.Mutual_Funds.best_asset}</td>
+                  <td>${(allocation.Stocks * 100).toFixed(2)}%</td>
+                  <td>${result.Index.best_return} / ${result.Mutual_Funds.best_return}</td>
+              </tr>
+          `;
+          var rowBond = `
+              <tr>
+                  <td>Bonds</td>
+                  <td>${result.Gold_Bond.best_asset}</td>
+                  <td>${(allocation.Bonds * 100).toFixed(2)}%</td>
+                  <td>${result.Gold_Bond.best_return}</td>
+              </tr>
+          `;
+          var rowCash = `
+              <tr>
+                  <td>Cash (Bank)</td>
+                  <td>${bank_names}</td>
+                  <td>${(allocation.Cash * 100).toFixed(2)}%</td>
+                  <td>${bank_rates}</td>
+              </tr>
+          `;
+
+          // Append rows to table
+          tableBody.innerHTML += rowStock;
+          tableBody.innerHTML += rowBond;
+          tableBody.innerHTML += rowCash;
+
+          var labels = [bestStock, bestBond, cashLabel];
+          var dataValues = Object.values(allocation).map(x => x * 100);
+
+          var ctx = document.getElementById('investmentChart').getContext('2d');
+
+          if (window.myPieChart) {
+              window.myPieChart.destroy();
+          }
+
+          window.myPieChart = new Chart(ctx, {
+              type: 'pie',
+              data: {
+                  labels: labels,
+                  datasets: [{
+                      data: dataValues,
+                      backgroundColor: chartColors
+                  }]
+              },
+              options: {
+                  responsive: true,
+                  plugins: {
+                      legend: {
+                          labels: {
+                              color: "white",
+                              font: { size: 14 },
+                          },
+                          position: 'top'
+                      }
+                  },
+                  layout: {
+                      padding: 20
+                  }
+              }
+          });
+
+        // Custom legend to display the full cash label outside the pie chart
+        document.getElementById('custom-legend').innerHTML = `
+            <p>${cashLabel}</p>
+        `;
+      }
+      </script>
+      
+
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js" integrity="sha384-0pUGZvbkm6XF6gxjEnlmuGrJXVbNuzT9qBBavbLwCsOGabYfZo0T0to5eqruptLy" crossorigin="anonymous"></script>
+  </body>
+</html>
