@@ -5,4 +5,4 @@ yfinance
 statsmodels
 matplotlib
 seaborn
-sklearn
+openpyxl

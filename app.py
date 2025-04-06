@@ -7,7 +7,7 @@ import pandas as pd
 import numpy as np
 from statsmodels.tsa.arima.model import ARIMA
 import datetime
-from openpyxl import load_workbook, Workbook
+from openpyxl import load_workbook
 from static_data import assets_names, index, mutual_funds, fd_rates, stepwise_model_order
 
 # ============================== Global Variables ==============================
@@ -33,13 +33,17 @@ def generate_closing_prices():
     return pd.DataFrame({'Close': close_prices})
 
 def get_data(stock_name):
-    ticker_data = yf.Ticker(stock_name)
-    historical_data = ticker_data.history(period='max')
-    if len(historical_data) > 0:
-        df = pd.DataFrame(historical_data)
-        return df
-    else:
-        print(f"No data for {stock_name}")
+    try:
+        ticker_data = yf.Ticker(stock_name)
+        historical_data = ticker_data.history(period='max')
+        if len(historical_data) > 0:
+            df = pd.DataFrame(historical_data)['Close']
+            return df
+        else:
+            print(f"No data for {stock_name}")
+    except Exception as e:
+        print(f"Error fetching data for {stock_name}: {str(e)}")
+        return None
 
 def train_arima_model(asset_data, stepwise_order=(5, 2, 0)):
     model = ARIMA(asset_data, order=stepwise_order)
@@ -56,11 +60,22 @@ def update_models():
     #     "Gold_Bond": {'gold_bond': generate_closing_prices()}
     # }
 
-    assets = {
-        "Index": {ind: read_excel(i, 'Index_Data.xlsx') for i, ind in enumerate(index)},
-        "Mutual_Funds": {fund: read_excel(i, 'Mutual_Funds_Data.xlsx') for i, fund in enumerate(mutual_funds)},
-        "Gold_Bond": {'gold_bond': read_excel(0, 'Gold_Bond_Data.xlsx')}
-    }
+    print(len(get_data('^BSESN')))
+
+    if len(get_data('^BSESN')):
+        print("yfinance is working...")
+        assets = {
+            "Index": {ind: get_data(ind) for i, ind in enumerate(index)},
+            "Mutual_Funds": {fund: get_data(fund) for i, fund in enumerate(mutual_funds)},
+            "Gold_Bond": {'gold_bond': read_excel(0, 'Gold_Bond_Data.xlsx')}
+        }
+    else:
+        print("yfinance is not working...")
+        assets = {
+            "Index": {ind: read_excel(i, 'Index_Data.xlsx') for i, ind in enumerate(index)},
+            "Mutual_Funds": {fund: read_excel(i, 'Mutual_Funds_Data.xlsx') for i, fund in enumerate(mutual_funds)},
+            "Gold_Bond": {'gold_bond': read_excel(0, 'Gold_Bond_Data.xlsx')}
+        }
 
     trained_models = {
         "Index": {name: train_arima_model(df, stepwise_model_order["Index"][name]) for name, df in assets["Index"].items()},
@@ -136,4 +151,5 @@ def run_model():
     return render_template('index.html', show_result=True, result=best_asset_return)
 
 if __name__=="__main__":
-    app.run(debug=True, port=8000)
+    app.run(debug=True)
+    # app.run(debug=True, port=8000)
