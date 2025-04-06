@@ -99,10 +99,6 @@ def check_for_update():
 def index():
     return render_template("index.html", show_result=False)
 
-@app.route("/index")
-def index():
-    return render_template("index.html", show_result=False)
-
 @app.route("/about")
 def about():
     return render_template("about.html")
