@@ -24,8 +24,6 @@ The objective of this frontend is to:
 
 1. Provide a clean, interactive UI using Flask.  
 2. Visualize financial data and ARIMA-based forecasts.  
-3. Allow users to monitor trends across asset types.  
-4. Support integration with backend LSTM model (future scope).  
 
 ---
 
@@ -58,14 +56,13 @@ pip install flask gunicorn numpy openpyxl pandas scipy statsmodels yfinance
 
 - `app.py`: Main entry point of the Flask application.  
 - `templates/`: Contains HTML files for rendering views.  
-- `static/`: Contains CSS, JS, and image assets.  
 
 ---
 
 ## 🛠️ Tools and Technologies
 
 - **Framework**: Flask  
-- **Languages**: Python, HTML, CSS  
+- **Languages**: Python, HTML, CSS, JavaScript  
 - **Libraries**: ARIMA (pmdarima), Pandas, NumPy, Plotly, Matplotlib  
 - **Version Control**: Git, GitHub  
 
